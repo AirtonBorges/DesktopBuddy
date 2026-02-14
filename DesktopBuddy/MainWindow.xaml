@@ -1,6 +1,7 @@
 ﻿<Window x:Class="DesktopBuddy.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -11,8 +12,9 @@
         Width="100"
         Height="100"
     >
-    <Image Source="https://assets.stickpng.com/images/59f8782b3cec115efb362386.png"
-       SnapsToDevicePixels="True"
-       UseLayoutRounding="True"
+    <Image 
+        gif:ImageBehavior.AnimatedSource="./Assets/hello-kitty.gif"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True"
     />
 </Window>

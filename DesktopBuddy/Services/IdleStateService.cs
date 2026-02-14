@@ -13,14 +13,21 @@ public class IdleStateService: IStateService<EState>
 
     public Task Tick()
     {
-        var xWaitTime = _random.Next(_minimumWaitTime, _maximumWaitTime);
-        Thread.Sleep(xWaitTime);
+        var waitTime = _random.Next(_minimumWaitTime, _maximumWaitTime);
+        Thread.Sleep(waitTime);
 
         return Task.CompletedTask;
     }
 
     public Task<EState> GetState()
     {
+        const double changeOfGoingAfterMouse = 0.2;
+        var random = _random.NextDouble();
+        if (random < changeOfGoingAfterMouse)
+        {
+            return Task.FromResult(EState.GoingAfterMouse);
+        }
+
         return Task.FromResult(EState.Walking);
     }
 }

@@ -9,7 +9,8 @@ namespace DesktopBuddy.Services;
 public class WalkingStateService: IStateService<EState>
 {
     private Vector2 _target;
-    private double _speed = 10;
+    private double _milissecondsToNextFrame = 1;
+    private double _pixelsPerFrame = 2;
 
     private readonly Random _random = new();
     private readonly WindowService _windowService;
@@ -25,17 +26,18 @@ public class WalkingStateService: IStateService<EState>
         var xPosition = _windowService.GetPosition();
 
         var xDistance = GetDistanceToTarget();
-        while (xDistance > _speed)
+        while (xDistance > 5)
         {
             var xDirectionX = (_target.X - xPosition.X) / xDistance;
             var xDirectionY = (_target.Y - xPosition.Y) / xDistance;
-            var xStepX = xPosition.X + xDirectionX * _speed;
-            var xStepY = xPosition.Y + xDirectionY * _speed;
+            var xStepX = (int)(xPosition.X + xDirectionX * _pixelsPerFrame);
+            var xStepY = (int)(xPosition.Y + xDirectionY * _pixelsPerFrame);
 
             _windowService.MoveTo(xStepX, xStepY);
             xPosition = _windowService.GetPosition();
             xDistance = GetDistanceToTarget();
-            await Task.Delay((int)_speed);
+
+            await Task.Delay((int)_milissecondsToNextFrame);
         }
     }
 

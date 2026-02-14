@@ -23,7 +23,7 @@ public class WindowService
             _window.Top = y;
         });
     }
-    
+
     public void MoveTo(double x, double y)
     {
         _window.Dispatcher.Invoke(() =>
