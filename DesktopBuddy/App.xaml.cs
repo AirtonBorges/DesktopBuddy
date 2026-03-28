@@ -1,61 +1,92 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using DesktopBuddy.Interfaces;
 using DesktopBuddy.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Application = System.Windows.Application;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.FileProviders;
 
-namespace DesktopBuddy
+namespace DesktopBuddy;
+
+public partial class App
 {
-    public partial class App : Application
+    public IServiceProvider Services { get; private set; } = null!;
+    private NotifyIcon _notifyIcon;
+
+    protected override void OnStartup(StartupEventArgs e)
     {
-        public IServiceProvider Services { get; private set; } = null!;
-        private NotifyIcon _notifyIcon;
+        ConfigureTrayIcon();
+        ConfigureIoC();
+    }
 
-        protected override void OnStartup(StartupEventArgs e)
+    private void ConfigureTrayIcon()
+    {
+        _notifyIcon = new NotifyIcon();
+        _notifyIcon.Icon = new Icon("assets/mac.ico"); 
+        _notifyIcon.Visible = true;
+        _notifyIcon.Text = "Desktop Kitty";
+
+        var contextMenu = new ContextMenuStrip();
+        contextMenu.Items.Add("Sair", null, (s, e) => Shutdown());
+        _notifyIcon.ContextMenuStrip = contextMenu;
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        if (_notifyIcon != null)
         {
-            ConfigureTrayIcon();
-            ConfigureIoC();
+            _notifyIcon.Dispose();
+        }
+        base.OnExit(e);
+    }
+
+    private void ConfigureIoC()
+    {
+        var builder = WebApplication.CreateBuilder([]);
+
+        builder.Services.AddSingleton<MainWindow>();
+        builder.Services.AddSingleton<WindowService>();
+        builder.Services.AddSingleton<StateMachineService>();
+        builder.Services.AddKeyedScoped<IStateService<EState>, WalkingStateService>(nameof(EState.Walking));
+        builder.Services.AddKeyedScoped<IStateService<EState>, GoingAfterMouseService>(nameof(EState.GoingAfterMouse));
+        builder.Services.AddKeyedScoped<IStateService<EState>, IdleStateService>(nameof(EState.Idle));
+
+        builder.Services.AddRazorComponents()
+            .AddInteractiveServerComponents();
+
+        builder.WebHost.UseStaticWebAssets();
+
+        var app = builder.Build();
+
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Error", createScopeForErrors: true);
+            app.UseHsts();
         }
 
-        private void ConfigureTrayIcon()
+        app.UseHttpsRedirection();
+
+        app.UseStaticFiles(new StaticFileOptions
         {
-            _notifyIcon = new NotifyIcon();
-            _notifyIcon.Icon = new Icon("assets/mac.ico"); 
-            _notifyIcon.Visible = true;
-            _notifyIcon.Text = "Desktop Kitty";
+            FileProvider = new PhysicalFileProvider(
+                Path.Combine(AppContext.BaseDirectory, "wwwroot")),
+            RequestPath = ""
+        });
 
-            var contextMenu = new ContextMenuStrip();
-            contextMenu.Items.Add("Sair", null, (s, e) => Shutdown());
-            _notifyIcon.ContextMenuStrip = contextMenu;
-        }
+        app.UseAntiforgery();
 
-        protected override void OnExit(ExitEventArgs e)
-        {
-            if (_notifyIcon != null)
-            {
-                _notifyIcon.Dispose();
-            }
-            base.OnExit(e);
-        }
+        app.MapRazorComponents<DesktopBuddy.FrontEnd.Components.App>()
+            .AddInteractiveServerRenderMode();
 
-        private void ConfigureIoC()
-        {
-            var services = new ServiceCollection();
+        app.RunAsync();
 
-            services.AddSingleton<MainWindow>();
-            services.AddSingleton<WindowService>();
-            services.AddSingleton<StateMachineService>();
-            services.AddKeyedScoped<IStateService<EState>, WalkingStateService>(nameof(EState.Walking));
-            services.AddKeyedScoped<IStateService<EState>, GoingAfterMouseService>(nameof(EState.GoingAfterMouse));
-            services.AddKeyedScoped<IStateService<EState>, IdleStateService>(nameof(EState.Idle));
-
-            Services = services.BuildServiceProvider();
-            
-            var mainWindow = (MainWindow)Services.GetRequiredService(typeof(MainWindow));
-            mainWindow.Show();
-        }
+        var mainWindow = (MainWindow)app.Services.GetRequiredService(typeof(MainWindow));
+        mainWindow.Show();
     }
 }

@@ -10,7 +10,7 @@ public class MouseService
     public static extern bool SetCursorPos(int X, int Y);
 
     // Imports the mouse_event function from user32.dll
-    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    [DllImport("user32.dll")]
     public static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
 
     // Define constants for mouse events

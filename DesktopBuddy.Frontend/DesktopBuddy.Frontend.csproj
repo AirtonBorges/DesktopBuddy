@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>DesktopBuddy.FrontEnd</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\app.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\bootstrap\bootstrap.min.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\bootstrap\bootstrap.min.css.map" />
+      <_ContentIncludedByDefault Remove="wwwroot\favicon.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="wwwroot\app.css" />
+      <None Include="wwwroot\bootstrap\bootstrap.min.css" />
+      <None Include="wwwroot\bootstrap\bootstrap.min.css.map" />
+      <None Include="wwwroot\favicon.png" />
+    </ItemGroup>
+
+</Project>
